@@ -1,0 +1,31 @@
+# Neville Goddard Content Factory v1.0
+# Focus: @nevgoinstitute
+# Copy this file and fill in your keys, or set environment variables
+
+apis:
+  apify_token: ${APIFY_TOKEN}
+  claude_api_key: ${CLAUDE_API_KEY}
+  telegram_bot_token: ${TELEGRAM_BOT_TOKEN}
+  telegram_chat_id: ${TELEGRAM_CHAT_ID}
+
+brand:
+  name: Nevgo Institute
+  username: nevgoinstitute
+  tagline: Hanya seseorang yang takjub akan keajaiban hidup
+  website: https://nevgoinstitute.com
+  primary_color: "#1a1a2e"
+  accent_color: "#e94560"
+
+content:
+  topics_per_batch: 7
+  min_posts_per_week: 3
+  max_posts_per_week: 7
+  default_tone: edukatif
+  platforms: [instagram, tiktok]
+
+schedule:
+  best_times: ["07:00", "12:00", "19:00"]
+  timezone: "Asia/Jakarta"
+  notify_before_minutes: 30
+
+database: data/factory.db

@@ -1,0 +1,15 @@
+# Database & secrets
+*.db
+config.local.yaml
+.env
+
+# Output
+output/
+
+# OS junk
+.DS_Store
+*.swp
+
+# Byte cache
+__pycache__/
+*.pyc
