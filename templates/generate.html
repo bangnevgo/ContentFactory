@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Generate{% endblock %}
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-6">Generate Content</h1>
+
+<div class="grid md:grid-cols-2 gap-8">
+  <div class="card p-6">
+    <h2 class="text-lg font-semibold mb-4">Generate</h2>
+    <form method="POST" action="/generate" class="space-y-4">
+      <div>
+        <label class="text-sm text-gray-400 block mb-1">Topic *</label>
+        <input type="text" name="topic" value="{{ topic or 'SATS Technique' }}" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-gray-400 block mb-1">Tone</label>
+          <select name="tone">
+            <option value="edukatif">Edukatif</option>
+            <option value="motivational">Motivational</option>
+            <option value="conversational">Conversational</option>
+            <option value="authority">Authority</option>
+            <option value="soft_sell">Soft Sell</option>
+          </select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-400 block mb-1">Format</label>
+          <select name="type">
+            <option value="carousel">Carousel</option>
+            <option value="quote">Quote Card</option>
+            <option value="reels">Reels Script</option>
+            <option value="caption">Feed Caption</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-gray-400 block mb-1">Platform</label>
+          <select name="platform">
+            <option value="instagram">Instagram</option>
+            <option value="tiktok">TikTok</option>
+          </select>
+        </div>
+        <div class="flex items-end gap-3">
+          <label class="flex items-center gap-2 text-sm cursor-pointer">
+            <input type="checkbox" name="with_image" value="1" style="width:auto">
+            Generate image too
+          </label>
+        </div>
+      </div>
+      <button type="submit" class="btn-accent w-full">Generate</button>
+    </form>
+  </div>
+
+  {% if result %}
+  <div class="card p-6">
+    <h2 class="text-lg font-semibold mb-4">Result — <span class="font-mono text-xs">{{ result.content_id[:8] }}</span></h2>
+    <div class="bg-gray-900 rounded-lg p-4 text-sm whitespace-pre-wrap mb-4 max-h-96 overflow-y-auto">{{ result.caption }}</div>
+    {% if result.hashtags %}
+      <p class="text-xs text-gray-400 mb-4">{{ " ".join(result.hashtags) if result.hashtags is iterable and result.hashtags is not string else result.hashtags }}</p>
+    {% endif %}
+    {% if image_path %}
+      <img src="/images/file?path={{ image_path|e }}" class="w-full rounded-lg" alt="Generated image">
+    {% endif %}
+    <div class="flex gap-3 mt-4">
+      <form method="POST" action="/content/{{ result.content_id }}/approve" style="display:inline">
+        <button class="btn-accent text-sm">Approve</button>
+      </form>
+      <a href="/repurpose/{{ result.content_id }}" class="btn-ghost text-sm">Repurpose →</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

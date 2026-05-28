@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-6">Dashboard</h1>
+
+<!-- Funnel -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  {% for s in funnel %}
+  <div class="card p-5 text-center">
+    <div class="text-3xl font-bold" style="color:#e94560">{{ s.count }}</div>
+    <div class="text-sm text-gray-400 uppercase tracking-wider">{{ s.status }}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="grid md:grid-cols-2 gap-6 mb-8">
+  <!-- Recent content -->
+  <div class="card p-5">
+    <h2 class="text-lg font-semibold mb-4">Recent Content</h2>
+    {% if recent %}
+    <table class="w-full text-sm">
+      <thead><tr><th>ID</th><th>Topic</th><th>Status</th></tr></thead>
+      <tbody>
+      {% for r in recent %}
+        <tr>
+          <td class="font-mono text-xs"><a href="/content">{{ r.content_id[:8] }}</a></td>
+          <td class="truncate max-w-[200px]">{{ r.topic[:30] }}</td>
+          <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-gray-500 text-sm">No content yet. <a href="/generate">Generate your first piece →</a></p>
+    {% endif %}
+  </div>
+
+  <!-- Schedule -->
+  <div class="card p-5">
+    <h2 class="text-lg font-semibold mb-4">Upcoming Schedule</h2>
+    {% if schedule %}
+    <table class="w-full text-sm">
+      <thead><tr><th>When</th><th>Topic</th></tr></thead>
+      <tbody>
+      {% for s in scheduled %}
+        <tr>
+          <td class="text-xs font-mono">{{ s.scheduled_at[:16] }}</td>
+          <td class="truncate max-w-[200px]">{{ s.topic[:30] }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-gray-500 text-sm">No upcoming schedule. <a href="/schedule">Schedule content →</a></p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Analytics snapshot -->
+{% if analytics %}
+<div class="card p-5">
+  <h2 class="text-lg font-semibold mb-4">Analytics — Latest Snapshot</h2>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div>
+      <div class="text-2xl font-bold">{{ analytics.followers }}</div>
+      <div class="text-xs text-gray-400">Followers</div>
+    </div>
+    <div>
+      <div class="text-2xl font-bold">{{ "%.1f"|format(analytics.avg_likes) }}</div>
+      <div class="text-xs text-gray-400">Avg Likes</div>
+    </div>
+    <div>
+      <div class="text-2xl font-bold">{{ "%.1f"|format(analytics.avg_comments) }}</div>
+      <div class="text-xs text-gray-400">Avg Comments</div>
+    </div>
+    <div>
+      <div class="text-2xl font-bold">{{ "%.2f"|format(analytics.engagement_rate) }}%</div>
+      <div class="text-xs text-gray-400">Engagement</div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Content{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Content</h1>
+  <div class="flex gap-2">
+    <a href="/content" class="btn-ghost text-sm">All</a>
+    <a href="/content?status=draft" class="btn-ghost text-sm">Draft</a>
+    <a href="/content?status=approved" class="btn-ghost text-sm">Approved</a>
+    <a href="/content?status=scheduled" class="btn-ghost text-sm">Scheduled</a>
+  </div>
+</div>
+
+<div class="card overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Type</th>
+        <th>Topic</th>
+        <th>Tone</th>
+        <th>Status</th>
+        <th>Created</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for c in items %}
+      <tr>
+        <td class="font-mono text-xs"><a href="/repurpose/{{ c.content_id }}">{{ c.content_id[:8] }}</a></td>
+        <td>{{ c.type }}</td>
+        <td class="truncate max-w-[200px]">{{ c.topic[:35] }}</td>
+        <td>{{ c.tone }}</td>
+        <td><span class="badge badge-{{ c.status }}">{{ c.status }}</span></td>
+        <td class="text-xs text-gray-400">{{ c.created_at[:10] if c.created_at else '' }}</td>
+        <td class="flex gap-2">
+          {% if c.status == 'draft' %}
+          <form method="POST" action="/content/{{ c.content_id }}/approve"><button class="btn-accent text-xs py-1 px-3">✓</button></form>
+          {% endif %}
+          {% if c.status == 'approved' %}
+          <form method="POST" action="/content/{{ c.content_id }}/reject"><button class="btn-ghost text-xs py-1 px-3">✗</button></form>
+          {% endif %}
+          <a href="/repurpose/{{ c.content_id }}" class="text-xs py-1 px-3 rounded" style="background:#e9456020;color:#e94560">⇄</a>
+        </td>
+      </tr>
+    {% endfor %}
+    {% if not items %}
+      <tr><td colspan="7" class="text-center text-gray-500 py-8">No content found. <a href="/generate">Generate first →</a></td></tr>
+    {% endif %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

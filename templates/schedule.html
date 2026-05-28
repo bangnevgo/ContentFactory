@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Schedule{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Schedule</h1>
+</div>
+
+<div class="grid md:grid-cols-2 gap-6">
+  <!-- Upcoming -->
+  <div class="card p-5">
+    <h2 class="text-lg font-semibold mb-4">Upcoming</h2>
+    {% if schedule %}
+    <table class="w-full text-sm">
+      <thead><tr><th>When</th><th>Type</th><th>Topic</th></tr></thead>
+      <tbody>
+      {% for s in schedule %}
+        <tr>
+          <td class="font-mono text-xs">{{ s.scheduled_at[:16] }}</td>
+          <td>{{ s.type }}</td>
+          <td class="truncate max-w-[200px]">{{ s.topic[:30] }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+      <p class="text-gray-500 text-sm">No upcoming schedule.</p>
+    {% endif %}
+  </div>
+
+  <!-- Add -->
+  <div class="card p-5">
+    <h2 class="text-lg font-semibold mb-4">Add to Schedule</h2>
+    <form method="POST" action="/schedule/add" class="space-y-4">
+      <div>
+        <label class="text-sm text-gray-400 block mb-1">Content ID (12-char)</label>
+        <input type="text" name="content_id" placeholder="abc123def456" required>
+      </div>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm text-gray-400 block mb-1">Date</label>
+          <input type="date" name="date" required>
+        </div>
+        <div>
+          <label class="text-sm text-gray-400 block mb-1">Time</label>
+          <input type="time" name="time" value="19:00" required>
+        </div>
+      </div>
+      <button type="submit" class="btn-accent">Add to Schedule</button>
+    </form>
+  </div>
+</div>
+
+{% if pending %}
+<div class="card p-5 mt-6">
+  <h2 class="text-lg font-semibold mb-4">Approved / Pending Scheduling</h2>
+  <table class="w-full text-sm">
+    <thead><tr><th>ID</th><th>Topic</th><th>Tone</th><th>Schedule</th></tr></thead>
+    <tbody>
+    {% for p in pending %}
+      <tr>
+        <td class="font-mono text-xs">{{ p.content_id[:8] }}</td>
+        <td>{{ p.topic[:35] }}</td>
+        <td>{{ p.tone }}</td>
+        <td>
+          {% set found = false %}
+          {% for s in schedule %}
+            {% if s.content_id == p.content_id %}{% set found = true %}{% endif %}
+          {% endfor %}
+          {% if found %}<span class="badge badge-scheduled">scheduled</span>
+          {% else %}<span class="badge badge-approved">approved</span>{% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

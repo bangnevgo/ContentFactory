@@ -28,9 +28,11 @@ class VisualGenerator:
 
     def __init__(self, brand_cfg=None, output_dir=None):
         cfg = brand_cfg or {}
+        merged = {**self._brand}
         for k, v in cfg.items():
-            if k in self.BRAND:
-                self.BRAND[k] = v
+            if k in merged:
+                merged[k] = v
+        self._brand = merged
         self.output_dir = Path(output_dir) if output_dir else Path(__file__).resolve().parent.parent.parent / "output" / "images"
         self.output_dir.mkdir(parents=True, exist_ok=True)
         tpl_dir = Path(__file__).resolve().parent / "templates"
@@ -47,8 +49,8 @@ class VisualGenerator:
             tpl_dir=self.tpl_dir,
             quote_text=quote_text,
             topic=topic,
-            bg_color=bg_color or self.BRAND["primary_color"],
-            brand=self.BRAND,
+            bg_color=bg_color or self._brand["primary_color"],
+            brand=self._brand,
         )
         out = str(self.output_dir / f"{cid}_quote_card.jpg")
         _playwright_screenshot(rendered, out, out_w=size[0], out_h=size[1])
@@ -66,7 +68,7 @@ class VisualGenerator:
                 title=slide.get("title", ""),
                 body=slide.get("body", ""),
                 topic=topic,
-                brand=self.BRAND,
+                brand=self._brand,
             )
             out = str(self.output_dir / f"{cid}_carousel_{i:02d}.jpg")
             _playwright_screenshot(rendered, out, **dict(zip(("out_w", "out_h"), self.SIZES["carousel"])))
@@ -81,7 +83,7 @@ class VisualGenerator:
             headline=headline,
             subtext=subtext,
             cta=cta,
-            brand=self.BRAND,
+            brand=self._brand,
         )
         out = str(self.output_dir / f"{cid}_story.jpg")
         _playwright_screenshot(rendered, out, **dict(zip(("out_w", "out_h"), self.SIZES["story"])))

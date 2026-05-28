@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Images{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Generated Images</h1>
+</div>
+
+{% if images %}
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+  {% for img in images[-24:]|reverse %}
+  <div class="card overflow-hidden">
+    <img src="/images/file?path={{ img.path|e }}" class="w-full aspect-square object-cover" alt="{{ img.name }}">
+    <div class="p-3">
+      <p class="text-xs font-mono truncate text-gray-400">{{ img.name }}</p>
+      <p class="text-xs text-gray-500">{{ img.size }}</p>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card p-12 text-center text-gray-500">
+  <p>No images generated yet.</p>
+  <p class="mt-2"><a href="/generate" class="btn-accent">Generate content with images →</a></p>
+</div>
+{% endif %}
+{% endblock %}

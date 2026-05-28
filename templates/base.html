@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}NEVGO Content Factory{% endblock %} — @nevgoinstitute</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{brand:{primary:'#1a1a2e',accent:'#e94560','accent-light':'#ff6b81',dark:'#0a0a1a'}}}}}</script>
+  <style>
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #0a0a1a; color: #ffffff; }
+    .card { background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 12px; }
+    .btn-accent { background: #e94560; color: #fff; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; border: none; }
+    .btn-accent:hover { background: #ff6b81; }
+    .btn-ghost { background: transparent; color: #e94560; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; border: 1px solid #e94560; }
+    .btn-ghost:hover { background: #e9456020; }
+    select,input,textarea { background: #0a0a1a; border: 1px solid #2a2a4a; color: #fff; padding: 10px 14px; border-radius: 8px; width: 100%; }
+    select:focus,input:focus,textarea:focus { border-color: #e94560; outline: none; }
+    a { color: #e94560; }
+    a:hover { color: #ff6b81; }
+    .badge { padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .badge-draft { background: #3b3b5c; color: #aaa; }
+    .badge-approved { background: #1b5e20; color: #a5d6a7; }
+    .badge-scheduled { background: #e65100; color: #ffcc80; }
+    .badge-published { background: #0d47a1; color: #90caf9; }
+    th { text-align: left; padding: 10px 14px; color: #aaa; font-size: 13px; }
+    td { padding: 10px 14px; border-top: 1px solid #2a2a4a; }
+    tr:hover td { background: #ffffff08; }
+  </style>
+</head>
+<body class="min-h-screen">
+  <nav class="card mb-6 sticky top-0 z-50 flex items-center justify-between px-6 py-4">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:#e94560;font-weight:bold;">N</div>
+      <div>
+        <div class="font-bold text-sm">NEVGO Content Factory</div>
+        <div class="text-xs text-gray-400">@nevgoinstitute</div>
+      </div>
+    </div>
+    <div class="flex gap-4 text-sm">
+      <a href="/" class="opacity-80 hover:opacity-100">Dashboard</a>
+      <a href="/generate" class="opacity-80 hover:opacity-100">Generate</a>
+      <a href="/content" class="opacity-80 hover:opacity-100">Content</a>
+      <a href="/schedule" class="opacity-80 hover:opacity-100">Schedule</a>
+      <a href="/analytics" class="opacity-80 hover:opacity-100">Analytics</a>
+      <a href="/images" class="opacity-80 hover:opacity-100">Images</a>
+    </div>
+  </nav>
+
+  <main class="max-w-6xl mx-auto px-6 pb-12">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat,msg in messages %}
+        <div class="mb-4 p-4 rounded-lg {% if cat=='error' %}bg-red-900/40 border border-red-800{% else %}bg-green-900/40 border border-green-800{% endif %}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="text-center text-xs text-gray-600 py-8">
+    NEGVO Content Factory v2.0 — Built with Flask + Tailwind
+  </footer>
+</body>
+</html>

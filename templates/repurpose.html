@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Repurpose{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Repurpose</h1>
+  <a href="/content" class="btn-ghost text-sm">← All Content</a>
+</div>
+
+<div class="grid md:grid-cols-2 gap-6">
+  <!-- Source -->
+  <div class="card p-5">
+    <h2 class="text-lg font-semibold mb-2">{{ content.topic }}</h2>
+    <p class="text-xs text-gray-400 mb-4">ID: <span class="font-mono">{{ content.content_id }}</span> · {{ content.type }} · {{ content.status }}</p>
+    <div class="bg-gray-900 rounded-lg p-4 text-sm whitespace-pre-wrap max-h-64 overflow-y-auto">{{ content.caption[:600] }}</div>
+  </div>
+
+  <!-- Adapt form -->
+  <div class="card p-5">
+    <h2 class="text-lg font-semibold mb-4">Adapt to Format</h2>
+    <form method="POST" action="/repurpose/{{ content.content_id }}">
+      <label class="text-sm text-gray-400 block mb-1">Target Format</label>
+      <select name="format" class="mb-4">
+        <option value="all">All formats</option>
+        <option value="quote_cards">Quote Cards</option>
+        <option value="reels">Reels Script</option>
+        <option value="blog">Blog Post</option>
+        <option value="email">Email</option>
+        <option value="twitter">Twitter Thread</option>
+        <option value="story">Story Series</option>
+      </select>
+      <button type="submit" class="btn-accent w-full">Adapt</button>
+    </form>
+  </div>
+</div>
+
+{% if result %}
+<div class="card p-5 mt-6">
+  <h2 class="text-lg font-semibold mb-4">Result — {{ result.get('format', 'all') }}</h2>
+  <div class="bg-gray-900 rounded-lg p-4 text-sm whitespace-pre-wrap max-h-96 overflow-y-auto">{{ result_text }}</div>
+</div>
+{% endif %}
+{% endblock %}

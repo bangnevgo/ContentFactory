@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold">Analytics</h1>
+</div>
+
+{% if latest %}
+<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
+  <div class="card p-4 text-center">
+    <div class="text-2xl font-bold" style="color:#e94560">{{ latest.followers }}</div>
+    <div class="text-xs text-gray-400">Followers</div>
+  </div>
+  <div class="card p-4 text-center">
+    <div class="text-2xl font-bold" style="color:#e94560">{{ latest.following }}</div>
+    <div class="text-xs text-gray-400">Following</div>
+  </div>
+  <div class="card p-4 text-center">
+    <div class="text-2xl font-bold" style="color:#e94560">{{ latest.posts_count }}</div>
+    <div class="text-xs text-gray-400">Posts</div>
+  </div>
+  <div class="card p-4 text-center">
+    <div class="text-2xl font-bold" style="color:#e94560">{{ "%.1f"|format(latest.avg_likes) }}</div>
+    <div class="text-xs text-gray-400">Avg Likes</div>
+  </div>
+  <div class="card p-4 text-center">
+    <div class="text-2xl font-bold" style="color:#e94560">{{ "%.2f"|format(latest.engagement_rate) }}%</div>
+    <div class="text-xs text-gray-400">Engagement</div>
+  </div>
+</div>
+{% endif %}
+
+{% if recent_posts %}
+<div class="card p-5">
+  <h2 class="text-lg font-semibold mb-4">Recent Posts</h2>
+  <table class="w-full text-sm">
+    <thead><tr><th>Shortcode</th><th>Type</th><th>Likes</th><th>Comments</th></tr></thead>
+    <tbody>
+    {% for p in recent_posts|sort(attribute='likes', reverse=true)|slice(10) %}
+      <tr>
+        <td class="font-mono text-xs">{{ p.post_shortcode }}</td>
+        <td>{{ p.post_type }}</td>
+        <td>{{ p.likes }}</td>
+        <td>{{ p.comments }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="card p-12 text-center text-gray-500">
+  <p>No analytics data.</p>
+  <p class="text-xs mt-2">Pull data via <code>factory analytics pull</code></p>
+</div>
+{% endif %}
+
+{% endblock %}
