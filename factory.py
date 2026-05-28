@@ -350,8 +350,12 @@ def cmd_analytics(args):
     """Instagram analytics via Apify."""
     if args.action == "pull":
         print("  Pulling Instagram data via Apify...")
+        token = CONFIG.get("apis", {}).get("apify_token", "")
+        if not token:
+            print("  ERROR: APIFY_TOKEN not set. Run: export APIFY_TOKEN=<your_token>")
+            return
         from modules.analytics.tracker import AnalyticsTracker
-        tracker = AnalyticsTracker()
+        tracker = AnalyticsTracker(apify_token=token)
         data = tracker.pull_data(username="nevgoinstitute", results_limit=50)
         db = FactoryDB()
         db.execute("""INSERT INTO analytics (date, followers, following, posts_count, avg_likes, avg_comments, engagement_rate)
