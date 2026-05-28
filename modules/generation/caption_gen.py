@@ -187,7 +187,7 @@ Swipe untuk breakdown lengkap {self.topic} →
         cta_sec = 5
 
         script = f"""🎬 REELS SCRIPT — {self.topic}
-⏱ Durasi: {durasi}s
+⏱ Durasi: {duration}s
 🎤 Tone: {self.tone["name"]}
 
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -218,7 +218,7 @@ SPEAK (Soft, confident):
 Kamu harus ANDAKAN."
 
 ━━━━━━━━━━━━━━━━━━━━━━
-⏱ {intro_sec + body_sec}:{durasi}s — CTA
+⏱ {intro_sec + body_sec}:{duration}s — CTA
 
 TEXT ON SCREEN: "Follow @nevgoinstitute"
 
@@ -236,7 +236,7 @@ CAPTION: {hook} — swipe ke salin carousel di profil untuk breakdown lengkap! @
             "hook": hook,
             "type": "reels_script",
             "tone": self.tone_val,
-            "duration": durasi,
+            "duration": duration,
         }
 
     def email(self, day=1):

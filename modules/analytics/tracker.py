@@ -131,16 +131,22 @@ class AnalyticsTracker:
         except Exception as e:
             return {"error": str(e)}
 
-        total_likes = sum(p.get("likesCount", 0) for p in posts if "no_items" not in p)
-        total_comments = sum(p.get("commentsCount", 0) for p in posts if "no_items" not in p)
+        valid_posts = [p for p in posts if "no_items" not in p]
+        total_likes = sum(p.get("likesCount", 0) for p in valid_posts)
+        total_comments = sum(p.get("commentsCount", 0) for p in valid_posts)
+        posts_count = len(valid_posts)
+
+        followers = valid_posts[0].get("ownerFollowersCount", 0) if valid_posts else 0
+        following = valid_posts[0].get("ownerFollowingCount", 0) if valid_posts else 0
+        engagement_rate = ((total_likes + total_comments) / max(followers, 1)) * 100 if valid_posts else 0
 
         return {
-            "followers": posts[0].get("ownerFollowersCount", 0) if posts else 0,
-            "following": posts[0].get("ownerFollowingCount", 0) if posts else 0,
-            "posts_count": len([p for p in posts if "no_items" not in p]),
-            "avg_likes": (total_likes / len(posts)) if posts else 0,
-            "avg_comments": (total_comments / len(posts)) if posts else 0,
-            "engagement_rate": 0,
+            "followers": followers,
+            "following": following,
+            "posts_count": posts_count,
+            "avg_likes": (total_likes / posts_count) if posts_count else 0,
+            "avg_comments": (total_comments / posts_count) if posts_count else 0,
+            "engagement_rate": round(engagement_rate, 3),
             "posts": [
                 {
                     "shortcode": p.get("shortCode", ""),
@@ -149,7 +155,7 @@ class AnalyticsTracker:
                     "type": p.get("type", ""),
                     "timestamp": p.get("timestamp", ""),
                 }
-                for p in posts if "no_items" not in p
+                for p in valid_posts
             ],
         }
 

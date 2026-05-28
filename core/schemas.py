@@ -13,6 +13,13 @@ class ContentType(str, Enum):
     EMAIL = "email"
     CAPTION = "caption"
 
+    @classmethod
+    def _missing_(cls, value):
+        alias = {"quote": cls.QUOTE_CARD, "reels": cls.REELS_SCRIPT}
+        if isinstance(value, str) and value.lower() in alias:
+            return alias[value.lower()]
+        return super()._missing_(value)
+
 
 class ContentStatus(str, Enum):
     DRAFT = "draft"
@@ -62,7 +69,7 @@ class ContentItem:
             "topic": self.topic,
             "tone": self.tone.value,
             "title": self.title,
-            "body": self.body,
+            "body": "\n".join(b for b in self.body if b) if isinstance(self.body, (list, tuple)) else (self.body or ""),
             "caption": self.caption,
             "hashtags": " ".join(self.hashtags),
             "image_path": self.image_path,

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1080px; height: 1080px;
+    background: linear-gradient(135deg, {{BG_COLOR}} 0%, #16213e 50%, {{ACCENT_COLOR}}33 100%);
+    font-family: 'Georgia', 'Times New Roman', serif;
+    color: #ffffff;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 80px;
+    position: relative;
+  }
+  .quote-mark {
+    font-size: 120px; line-height: 1;
+    color: {{ACCENT_COLOR}}; opacity: 0.7;
+    font-family: Georgia, serif;
+    margin-bottom: -30px;
+  }
+  .quote {
+    font-size: 42px; line-height: 1.5; text-align: center;
+    max-width: 900px; margin: 30px 0;
+    font-style: italic;
+  }
+  .divider {
+    width: 120px; height: 3px;
+    background: {{ACCENT_COLOR}}; margin: 30px auto;
+    border-radius: 2px;
+  }
+  .topic {
+    font-size: 24px; letter-spacing: 2px;
+    color: {{ACCENT_COLOR}}; text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .brand {
+    position: absolute; bottom: 40px; right: 60px;
+    font-size: 22px; color: rgba(255,255,255,0.8);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 1px;
+  }
+  .brand small { display: block; font-size: 14px; opacity: 0.6; text-align: right; }
+</style>
+</head>
+<body>
+  <div class="topic">{{TOPIC}}</div>
+  <div class="quote-mark">"</div>
+  <div class="quote">{{QUOTE}}</div>
+  <div class="divider"></div>
+  <div class="brand">
+    {{USERNAME}}
+    <small>{{BRAND_NAME}}</small>
+  </div>
+</body>
+</html>

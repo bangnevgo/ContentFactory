@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1080px; height: 1920px;
+    background: linear-gradient(180deg, {{ACCENT_COLOR}} 0%, {{PRIMARY_COLOR}} 40%, #0a0a1a 100%);
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #ffffff;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 120px 80px;
+    text-align: center;
+    position: relative;
+  }
+  .accent-bar {
+    width: 80px; height: 5px; background: #fff;
+    border-radius: 3px; margin-bottom: 50px;
+  }
+  h1 {
+    font-size: 88px; line-height: 1.15;
+    margin-bottom: 40px;
+    text-shadow: 0 4px 30px rgba(0,0,0,0.4);
+  }
+  .sub {
+    font-size: 40px; line-height: 1.6; max-width: 860px;
+    color: rgba(255,255,255,0.85); margin-bottom: 80px;
+  }
+  .cta {
+    background: {{ACCENT_COLOR}}; color: #fff;
+    padding: 24px 60px; border-radius: 60px;
+    font-size: 28px; font-weight: bold; letter-spacing: 2px;
+    display: inline-block;
+    box-shadow: 0 8px 30px rgba(233,69,96,0.4);
+  }
+  .brand {
+    position: absolute; bottom: 60px; left: 0; right: 0;
+    text-align: center;
+    font-size: 28px; font-weight: bold;
+    color: rgba(255,255,255,0.75); letter-spacing: 2px;
+  }
+  .brand small { display: block; font-size: 16px; opacity: 0.5; margin-top: 4px; font-weight: normal; }
+</style>
+</head>
+<body>
+  <div class="accent-bar"></div>
+  <h1>{{HEADLINE}}</h1>
+  <div class="sub">{{SUBTEXT}}</div>
+  <div class="cta">{{CTA}}</div>
+  <div class="brand">
+    {{USERNAME}}
+    <small>{{BRAND_NAME}}</small>
+  </div>
+</body>
+</html>

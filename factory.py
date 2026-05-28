@@ -179,6 +179,7 @@ def cmd_generate(args):
         body=result.get("body", ""),
     )
     db.insert_content(item.db_row())
+    cmd_generate_with_image(args, result, item)
 
     print(f"\n{'='*55}")
     print(f"  GENERATED: {content_type.upper()} — {topic}")
@@ -208,7 +209,7 @@ def cmd_curate(args):
 
     if args.action == "preview":
         status = args.status or "draft"
-        rows = db.query("SELECT content_id, type, topic, status, status, created_at, substr(caption, 1, 60) as preview FROM content WHERE status = ? ORDER BY created_at DESC LIMIT 20", [status])
+        rows = db.query("SELECT content_id, type, topic, status, created_at, substr(caption, 1, 60) as preview FROM content WHERE status = ? ORDER BY created_at DESC LIMIT 20", [status])
         if not rows:
             print(f"Tidak ada content dengan status '{status}'.")
             return
@@ -443,6 +444,177 @@ def cmd_list(args):
     print()
 
 
+def cmd_visual(args):
+    """Generate branded images via Playwright."""
+    brand = CONFIG.get("brand", {})
+    from modules.visual.renderer import VisualGenerator
+    gen = VisualGenerator(brand_cfg=brand)
+
+    action = getattr(args, "visual_action", None)
+    if action is None:
+        print("Usage: factory visual <quote|story|carousel> [options]")
+        return
+
+    if action == "quote":
+        topic = args.topic
+        quote = args.quote or _pick_quote(topic)
+        out = gen.render_quote_card(quote_text=quote, topic=topic)
+        print(f"\n  ✓ Quote card generated:")
+        print(f"    {out}")
+        print(f"    Topic: {topic}")
+        print(f"    Size:  1080x1080\n")
+
+    elif action == "story":
+        topic = args.topic
+        headline = args.headline or topic
+        subtext = args.subtext or f"Assume the feeling of the wish fulfilled — {topic}"
+        cta = args.cta
+        out = gen.render_story(headline=headline, subtext=subtext, cta=cta)
+        print(f"\n  ✓ Story image generated:")
+        print(f"    {out}")
+        print(f"    Headline: {headline}")
+        print(f"    Size:     1080x1920\n")
+
+    elif action == "carousel":
+        db = FactoryDB()
+        row = db.query("SELECT * FROM content WHERE content_id = ?", [args.id])
+        if not row:
+            print(f"Content '{args.id}' tidak ditemukan.")
+            return
+        slides_data = _slides_from_row(row[0])
+        if not slides_data:
+            print(f"Content '{args.id}' tidak punya slides (carousel/caption type only).")
+            return
+        paths = gen.render_carousel_slides(slides=slides_data, topic=row[0].get("topic", ""), content_id=args.id)
+        print(f"\n  ✓ Carousel slides generated ({len(paths)} slides):")
+        for i, p in enumerate(paths, 1):
+            print(f"    {i}. {p}")
+        print(f"    Size each: 1080x1080\n")
+
+
+def cmd_generate_with_image(args, result, item):
+    """Post-generate image hook: if --with-image flag set, render branded image."""
+    if not getattr(args, "with_image", False):
+        return
+    from modules.visual.renderer import VisualGenerator
+    brand = CONFIG.get("brand", {})
+    vg = VisualGenerator(brand_cfg=brand)
+    content_type = args.type or "carousel"
+    try:
+        if content_type == "quote":
+            quote = result.get("title", args.topic)
+            out = vg.render_quote_card(quote_text=quote, topic=args.topic, content_id=item.content_id)
+            print(f"  IMAGE: {out}")
+        elif content_type == "carousel" and result.get("slides"):
+            slides = [{"title": s, "body": ""} for s in result["slides"]]
+            paths = vg.render_carousel_slides(slides=slides, topic=args.topic, content_id=item.content_id)
+            print(f"  IMAGES: {len(paths)} slides generated")
+            for p in paths:
+                print(f"    {p}")
+        elif content_type == "story" or content_type == "reels":
+            headline = result.get("title", args.topic)
+            subtext = result.get("caption", "")[:200]
+            out = vg.render_story(headline=headline, subtext=subtext, cta="Follow @nevgoinstitute", content_id=item.content_id)
+            print(f"  IMAGE: {out}")
+        else:
+            out = vg.render_quote_card(quote_text=args.topic, topic=args.topic, content_id=item.content_id)
+            print(f"  IMAGE: {out}")
+    except Exception as e:
+        print(f"  ⚠ Image generation failed: {e}")
+        print(f"    Pastikan Playwright Chromium terinstall: playwright install chromium")
+
+
+def cmd_repurpose(args):
+    """Repurpose content into other formats."""
+    action = getattr(args, "repurpose_action", None)
+    if action is None:
+        print("Usage: factory repurpose <list|adapt> [options]")
+        return
+
+    if action == "list":
+        from modules.repurpose.adapter import Repurposer
+        dummy = {"topic": "Law of Assumption", "caption": "sample", "body": "sample", "hashtags": ""}
+        rep = Repurposer(dummy)
+        platforms = ["instagram_feed", "instagram_story", "instagram_reels", "twitter", "tiktok", "linkedin"]
+        print(f"\n  Available target formats:")
+        for m in ("quote_cards", "reels_script", "blog_post", "email", "twitter_thread", "story_series"):
+            print(f"    • {m}")
+        print(f"\n  Available platform specs:")
+        for platform in platforms:
+            spec = rep.resize_for_platform("", platform)["specs"]
+            print(f"    • {platform:<22} {spec['width']}x{spec['height']}  caption_max={spec['caption_max']}")
+        print()
+        return
+
+    if action == "adapt":
+        db = FactoryDB()
+        row = db.query("SELECT * FROM content WHERE content_id = ?", [args.id])
+        if not row:
+            print(f"Content '{args.id}' tidak ditemukan.")
+            return
+        item = row[0]
+        from modules.repurpose.adapter import Repurposer
+        rep = Repurposer(item)
+        fmt = args.format or "all"
+
+        dispatch = {
+            "all": rep.to_all,
+            "quote_cards": rep.to_quote_cards,
+            "reels": rep.to_reels_script,
+            "blog": rep.to_blog,
+            "email": rep.to_email,
+            "twitter": rep.to_thread,
+            "story": rep.to_story_series,
+        }
+        fn = dispatch.get(fmt)
+        if not fn:
+            print(f"Unknown format '{fmt}'. Available: {', '.join(dispatch.keys())}")
+            return
+        result = fn()
+        print(f"\n{'='*55}")
+        print(f"  REPURPOSE — {fmt} — {item.get('topic', '?')}")
+        print(f"  Source ID: {args.id}")
+        print(f"{'='*55}")
+        if isinstance(result, dict):
+            for k, v in result.items():
+                if isinstance(v, list):
+                    print(f"\n  {k} ({len(v)} items):")
+                    for entry in v[:8]:
+                        preview = str(entry)[:100]
+                        print(f"    • {preview}")
+                else:
+                    val_str = str(v)
+                    print(f"  {k}: {val_str[:200]}")
+        print()
+
+
+# ---------------------------------------------------------------- helpers ---
+
+def _pick_quote(topic):
+    """Pick a default Neville Goddard quote for a topic."""
+    quotes = {
+        "SATS": "Enter the state akin to sleep. Drowsy, sleepy state, yet in full control of your thoughts. — Neville Goddard",
+        "DEFAULT": "Assume the feeling of the wish fulfilled, and observe the route that your attention follows. — Neville Goddard",
+    }
+    for key, val in quotes.items():
+        if key.lower() in topic.lower():
+            return val
+    return quotes["DEFAULT"]
+
+
+def _slides_from_row(row):
+    """Extract slide list from a content row (carousel / reels)."""
+    body = row.get("body", "")
+    if isinstance(body, list):
+        return [{"title": s, "body": ""} for s in body]
+    if isinstance(body, str) and body.strip():
+        slides = [s.strip() for s in body.split("\n") if s.strip()]
+        return [{"title": s, "body": ""} for s in slides]
+    caption = row.get("caption", "")
+    lines = [l.strip() for l in caption.split("\n") if l.strip() and len(l.strip()) > 8]
+    return [{"title": l, "body": ""} for l in lines[:10]]
+
+
 def main():
     parser = argparse.ArgumentParser(prog="factory", description="Neville Goddard Content Factory v1.0")
     sub = parser.add_subparsers(dest="command")
@@ -462,6 +634,7 @@ def main():
     p_gen.add_argument("--slides", type=int, default=7, help="Number of carousel slides")
     p_gen.add_argument("--duration", type=int, default=60, help="Reels duration in seconds")
     p_gen.add_argument("--day", type=int, default=1, help="Email nurture day (1-7)")
+    p_gen.add_argument("--with-image", action="store_true", help="Generate branded JPG image alongside caption")
 
     # batch
     p_batch = sub.add_parser("batch", help="Batch generation")
@@ -504,6 +677,29 @@ def main():
     p_list = sub.add_parser("list", help="List all content")
     p_list.add_argument("--status", help="Filter by status")
 
+    # visual
+    p_visual = sub.add_parser("visual", help="Generate branded images (quote cards, stories, carousels)")
+    visual_sub = p_visual.add_subparsers(dest="visual_action")
+    p_vquote = visual_sub.add_parser("quote", help="Generate a quote card JPG")
+    p_vquote.add_argument("--topic", "-t", required=True, help="Quote topic")
+    p_vquote.add_argument("--quote", "-q", default="", help="Quote text (auto-generated if empty)")
+    p_vstory = visual_sub.add_parser("story", help="Generate a Story-sized image")
+    p_vstory.add_argument("--topic", "-t", required=True, help="Story topic")
+    p_vstory.add_argument("--headline", default="", help="Headline text")
+    p_vstory.add_argument("--subtext", default="", help="Subtext")
+    p_vstory.add_argument("--cta", default="Follow @nevgoinstitute", help="Call-to-action text")
+    p_vcarousel = visual_sub.add_parser("carousel", help="Generate carousel slide JPGs from content")
+    p_vcarousel.add_argument("id", help="Content ID (12-char)")
+
+    # repurpose
+    p_repurpose = sub.add_parser("repurpose", help="Repurpose content into other formats")
+    repurpose_sub = p_repurpose.add_subparsers(dest="repurpose_action")
+    p_rlist = repurpose_sub.add_parser("list", help="List available format mappings")
+    p_radapt = repurpose_sub.add_parser("adapt", help="Adapt content to a target format")
+    p_radapt.add_argument("id", help="Content ID (12-char)")
+    p_radapt.add_argument("--format", "-f", default="all",
+                          help="Target format: all, quote_cards, reels, blog, email, twitter, story")
+
     args = parser.parse_args()
 
     cmd_map = {
@@ -516,6 +712,8 @@ def main():
         "schedule": lambda a=args: cmd_schedule(a),
         "analytics": lambda a=args: cmd_analytics(a),
         "list": lambda a=args: cmd_list(a),
+        "visual": lambda a=args: cmd_visual(a),
+        "repurpose": lambda a=args: cmd_repurpose(a),
     }
 
     if args.command in cmd_map:
